@@ -3,7 +3,7 @@ import random
 import time
 from streamlit_autorefresh import st_autorefresh
 
-st.set_page_config(page_title="hit67.vo", page_icon="🎲")
+st.set_page_config(page_title="hitclub67.vo", page_icon="🎲")
 st.title("🎲 TÀI XỈU 🎲")
 
 st_autorefresh(interval=1000, key="timer")
