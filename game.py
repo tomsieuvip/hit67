@@ -93,7 +93,7 @@ if remaining == 0 and not st.session_state.rolled:
 
     if bet_val > 0 and bet_val <= st.session_state.balance:
         if choice_val == result:
-            profit = bet_val * 1.99
+            profit = bet_val * 0.99
             st.session_state.balance += profit
         else:
             profit = -bet_val
