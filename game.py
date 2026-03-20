@@ -53,20 +53,38 @@ col1, col2 = st.columns(2)
 max_bet = int(st.session_state.balance)
 
 with col1:
-    bet = st.number_input(
+    bet_input = st.text_input(
         "Số tiền cược:",
-        min_value=10 if max_bet >= 10 else max_bet,
-        max_value=max_bet,
-        value=min(st.session_state.bet_amount, max_bet),
-        step=10,
-        disabled=(remaining <= 0 or max_bet <= 0)
+        value=str(min(st.session_state.bet_amount, max_bet)),
+        disabled=(remaining <= 10 or max_bet <= 0)
     )
 
+# 1. Convert & sanitize
+try:
+    # Remove dots or commas in case users type "1.000" or "1,000"
+    clean_input = bet_input.replace(",", "").replace(".", "").strip()
+    raw_bet = int(clean_input) if clean_input else 0
+except ValueError:
+    raw_bet = 0
+
+# 2. Clamp range (Ensure it's within 0 and max_bet)
+raw_bet = max(0, min(raw_bet, max_bet))
+
+# 3. Calculate the rounded version
+bet = int(round(raw_bet / 1000) * 1000)
+
+# 4. Show error/info message if rounding occurred
+if raw_bet != bet and raw_bet != 0:
+    st.caption(f"⚠️ Tiền cược phải là bội số của 1.000. Đã làm tròn thành: **{bet:,}**")
+
+# Now use 'bet' for your game logic
 
 with col2:
-    if st.button("🔥 ALL IN 🥶", disabled=(remaining <= 10 or st.session_state.balance <= 0)):
-        st.session_state.bet_amount = int(st.session_state.balance)
-        st.rerun()  
+    if st.button("🔥 ALL IN 🥶", disabled=(remaining <= 10 or st.session_state.balance < 1000)):
+        # Round DOWN to the nearest 1000 so they don't bet fractional amounts
+        all_in_amount = (int(st.session_state.balance) // 1000) * 1000
+        st.session_state.bet_amount = all_in_amount
+        st.rerun()
 
 choice = st.radio(
     "Chọn:",
@@ -123,10 +141,15 @@ if st.session_state.history:
     # Hiển thị 10 ván gần nhất
     recent_history = list(reversed(st.session_state.history))[:10]
     for i, h in enumerate(recent_history):
-        color = "⚪" if h["bet"] == 0 else ("🟢" if h["profit"] > 0 else "🔴")
+        # 🟢 Green for Tài, 🔴 Red for Xỉu
+        color_icon = "🟢" if h["result"] == "Tài" else "🔴"
+        
+        # Determine text color for profit (Green for win, Red for loss)
+        profit_text = f"{'+' if h['profit'] > 0 else ''}{h['profit']:,.0f}"
+        
         st.write(
-            f"{color} Ván: {h['dice']} | Tổng {h['total']} → {h['result']} | "
-            f"Cược {h['bet']} | {'+' if h['profit']>0 else ''}{h['profit']:.0f}"
+            f"{color_icon} **{h['result']}** | Ván: {h['dice']} (Tổng {h['total']}) | "
+            f"Cược: {h['bet']:,} | KQ: {profit_text}"
         )
 else:
     st.info("Chưa có lượt chơi nào.")
