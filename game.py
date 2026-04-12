@@ -70,9 +70,6 @@ except ValueError:
 # 2. Clamp range (Ensure it's within 0 and max_bet)
 raw_bet = max(0, min(raw_bet, max_bet))
 
-# 3. Calculate the rounded version
-bet = int(round(raw_bet / 1000) * 1000)
-
 # 4. Show error/info message if rounding occurred
 if raw_bet != bet and raw_bet != 0:
     st.caption(f"⚠️ Tiền cược phải là bội số của 1.000. Đã làm tròn thành: **{bet:,}**")
